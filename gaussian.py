@@ -17,28 +17,38 @@ def lr_range(x, step):
         res.append(x + i)
     return res
 
-
-def avg_pixel(img, y, x, sz):
+def gaussian_pixel(img, y, x, sz):
     half = sz // 2
     sum_window = []
 
-    # xs = list(range(-half, half+1))
+    for irow in lr_range(y, half):
+        for icol in lr_range(x, half):
 
-    xlo = max(x-half, 0)
-    xhi = min(x+half+1, len(img[y]))
+            if 0 <= irow < len(img) and 0 <= icol < len(img[y]):
+                
+    
 
-    for irow in lr_range(y,half):
-        if irow < 0 or irow >= len(img):
-            row = []
-        else:
-            row = img[irow][xlo:xhi]
+# def avg_pixel(img, y, x, sz):
+#     half = sz // 2
+#     sum_window = []
 
-        sum_window = sum_window + row
+#     # xs = list(range(-half, half+1))
 
-    if len(sum_window) == 0:
-        return img[y][x]
+#     xlo = max(min(lr_range(x,half)), 0)
+#     xhi = min(max(lr_range(x,half))+1, len(img[y]))
 
-    return sum(sum_window)/len(sum_window)
+#     for irow in lr_range(y,half):
+#         if irow < 0 or irow >= len(img):
+#             row = []
+#         else:
+#             row = img[irow][xlo:xhi]
+
+#         sum_window = sum_window + row
+
+#     if len(sum_window) == 0:
+#         return img[y][x]
+
+#     return sum(sum_window)/len(sum_window)
 
 def new_img(img,sz):
     res = []
