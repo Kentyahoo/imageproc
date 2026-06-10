@@ -79,43 +79,119 @@ def gaussianpixel(img, y, x, sz):
     return total / weight_sum if weight_sum != 0 else img[y][x]
 
 def pixeleval(img, template, y, x):
-    #template
+
     sz = len(template)
     half = sz // 2
+
     ht = len(img)
     wd = len(img[0])
-    
+
     res = 0
     temp_sum = 0
-    
+
     for yT in range(sz):
         for xT in range(sz):
+
             ny = y + yT - half
             nx = x + xT - half
+
             if 0 <= ny < ht and 0 <= nx < wd:
-                res += img[ny][nx] * template[yT][xT]
-                temp_sum += template[yT][xT]
-    
-    return round(res / temp_sum) if temp_sum != 0 else 0
+                w = template[yT][xT]
+                res += img[ny][nx] * w
+                temp_sum += w
+
+    return res / temp_sum if temp_sum != 0 else 0
 def img_proc(img,sz, operation="avg", template=None):
     method = 0
     res = []
-    ht = len(img)-1
-    wd = len(img[0])-1
+    ht = len(img)
+    wd = len(img[0])
     for y in range(ht):
         res.append([])
         for x in range(wd):
             if template == None:
                 if operation == "gaussian":
-                    method = gaussianpixel(img,sz,x,y,)
+                    method = gaussianpixel(img,x,y, sz)
                 elif operation == 'avg':
                     method = avg_pixel(img,y,x,sz)
             else:
-                method == pixeleval(img, template,y,x,)
+                method = pixeleval(img, template,y,x,)
             res[y].append(method)
     return res
 
-print(img_proc(load_pgm("feep.ascii.pgm"),3))
+def main():
+
+    img = load_pgm("feep.ascii.pgm")
+
+    while True:
+
+        print("\n=== IMAGE PROCESSING MENU ===")
+        print("1. Average Blur")
+        print("2. Gaussian Blur")
+        print("3. Custom Template")
+        print("4. Quit")
+
+        choice = input("Choose an option: ")
+
+        # Average blur
+        if choice == "1":
+
+            sz = int(input("Kernel size: "))
+
+            result = img_proc(img, sz, operation="avg")
+
+            print("\nProcessed Image:")
+            print(result)
+
+        # Gaussian blur
+        elif choice == "2":
+
+            sz = int(input("Kernel size: "))
+
+            result = img_proc(img, sz, operation="gaussian")
+
+            print("\nProcessed Image:")
+            print(result)
+
+        # Custom template / convolution matrix
+        elif choice == "3":
+
+            sz = int(input("Template size: "))
+
+            print(f"\nEnter {sz * sz} numbers separated by spaces:")
+
+            vals = list(map(int, input().split()))
+
+            # Build 2D template matrix
+            template = []
+
+            for i in range(sz):
+
+                row = vals[i * sz:(i + 1) * sz]
+
+                template.append(row)
+
+            print("\nTemplate:")
+            for row in template:
+                print(row)
+
+            result = img_proc(img, sz, template=template)
+
+            print("\nProcessed Image:")
+            print(result)
+
+        # Quit
+        elif choice == "4":
+
+            print("Goodbye")
+            break
+
+        else:
+            print("Invalid option")
+
+
+if __name__ == "__main__":
+    main()
 
 
 # def img_proc(img, template):
