@@ -8,6 +8,7 @@ def load_pgm(filename):
     width, height = map(int, lines[1].split())
     pixels = list(map(int, ' '.join(lines[3:]).split()))
     return [pixels[i*width:(i+1)*width] for i in range(height)]
+
 def lr_range(x, step):
     '''Creates a list of [x-step, ..., x, ..., x+step]'''
     res = []
@@ -121,7 +122,8 @@ def img_proc(img,sz, operation="avg", template=None):
 
 def main():
 
-    img = load_pgm("feep.ascii.pgm")
+    filename = input("Enter PGM filename: ")
+    img = load_pgm(filename)
 
     while True:
 
