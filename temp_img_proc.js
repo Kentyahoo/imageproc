@@ -29,13 +29,15 @@ function loadPgm(filename) {
     return image;
 }
 
+/**
+ * @Note Creates a list of [x-step, ..., x, ..., x+step]
+ * @Assume @param step is a number, @param x can be a string
+ */
 function lrRange(x, step) {
-  let res = []
-  
-  for (let i of range(-step, step + 1)) {
-    res.push(x + i);
-  }
-    return res
+  const res = Array.from({length: step*2 + 1}, (_,i) => {
+    return i + Number(x)-step
+  })
+  return res
 }
 
 function avgPixel(img, y, x, sz) {
@@ -45,7 +47,7 @@ function avgPixel(img, y, x, sz) {
 
   let xlo = Math.max(x-half, 0)
   let xhi = Math.min(x+half+1, img[y].length)
-  let row;
+  let row;          
   for (let irow of lrRange(y,half)) {
     if (irow < 0 || irow >= img.length) {
       row = []
@@ -210,7 +212,9 @@ function main() {
         else if (choice === "3") {
             const sz = parseInt(readline.question("Template size: "))
             console.log(`\nEnter ${sz * sz} numbers separated by spaces:`)
-            const vals = readline.question("").split(" ").map(Number)
+            let vals = readline.question("").split(" ").map(Number)
+            // console.log('vals',vals)
+            // vals = vals.split(" ").map(Number)
             const template = []
 
             for (let i = 0; i < sz; i++) {
