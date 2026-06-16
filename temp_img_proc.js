@@ -1,5 +1,20 @@
 const fs = require('fs');
 
+function savePgm(filename, img) {
+    const height = img.length
+    const width = img[0].length
+
+    let data = "P2\n"
+    data += `${width} ${height}\n`
+    data += "255\n"
+
+    for (const row of img) {
+        data += row.map(v => Math.round(v)).join(" ") + "\n"
+    }
+
+    fs.writeFileSync(filename, data, 'utf8')
+}
+
 function range(start = 0, end) {
     const arr = [];
     for (let i = start; i < end; i++) {
@@ -61,12 +76,22 @@ function avgPixel(img, y, x, sz) {
   }
   let total = 0;
 
-for (const row of sumWindow) {
-    for (const value of row) {
-        total += value;
+  for (const row of sumWindow) {
+      for (const value of row) {
+          total += value;
+      }
+  }
+
+  let count = 0
+
+    for (const row of sumWindow) {
+      for (const value of row) {
+          total += value
+          count++
     }
 }
-  return total / sumWindow.length**2
+
+    return count === 0 ? img[y][x] : total / count
   }
 }
 
@@ -97,23 +122,23 @@ function gaussianPixel(img, y, x, sz) {
   let weightSum = 0
 
   for (let dy of range(-half, half + 1)) {
-    let imgy = y+dy
+    let imgy = y + dy
     if (imgy >= 0 && imgy < ht) {
       let wy = weights[dy + half]
-      for (let dx of range (-half, half + 1)) {
+      for (let dx of range(-half, half + 1)) {
         let imgx = x + dx
-        if (ny >= 0 && ny < ht && nx >= 0 && nx < wd) {
-          let wx = weights[dx + half]
-          let w = wy * wx
-          total += img[imgy][imgx] * w
-          weightSum += w 
+          if (imgx >= 0 && imgx < wd) {
+            let wx = weights[dx + half]
+            let w = wy * wx
+            total += img[imgy][imgx] * w
+            weightSum += w
+          }
         }
-      }
     }
-  }
+}
   let res = 0
   if (weightSum != 0) {
-    return total / weightSum
+    return total / sumWindow.flat().length
   }
   else {
     return img[y][x]
@@ -151,28 +176,41 @@ function pixeleval(img, template, y, x) {
 
 function imgProc(img, sz, operation = "avg", template=null) {
   let method = 0
-  let res = []
+  // let res = []
   const ht = img.length
   const wd = img[0].length
+  const res = img.map((row, y) =>
+    row.map((n,x) => {
+      if (template != null) {
+        return pixeleval(img, template, y, x)
+  }
 
-  for (y in range(0, ht)) {
-    res.push([])
-    for (x in range(0, wd)) {
-      if (template == null) {
-        if (operation == "gaussian") {
-         method = gaussianPixel(img, y, x, sz)
-        }
-        else if (operation == "avg") {
-        method = avgPixel(img, y, x, sz)
-  } 
-}
-        else {
-         method = pixeleval(img, template, y, x)
-}
+      if (operation === "gaussian") {
+        return gaussianPixel(img, y, x, sz)
+  }
 
-        res[y].push(method);
-      }
-    }
+      return avgPixel(img, y, x, sz)
+
+  }
+))
+//   for (y in range(0, ht)) {
+//     res.push([])
+//     for (x in range(0, wd)) {
+//       if (template == null) {
+//         if (operation == "gaussian") {
+//          method = gaussianPixel(img, y, x, sz)
+//         }
+//         else if (operation == "avg") {
+//         method = avgPixel(img, y, x, sz)
+//   } 
+// }
+//         else {
+//          method = pixeleval(img, template, y, x)
+// }
+
+//         res[y].push(method);
+//       }
+//     }
     return res
   }
   
@@ -196,17 +234,23 @@ function main() {
 
         if (choice === "1") {
             const sz = parseInt(readline.question("Kernel size: "))
+            // const result = imgProc(img, sz, "avg")
+            // console.log("\nProcessed Image:")
+            // console.log(result)
             const result = imgProc(img, sz, "avg")
-            console.log("\nProcessed Image:")
-            console.log(result)
+            const outFile = readline.question("Output filename (.pgm): ")
+            savePgm(outFile, result)
+            console.log("Saved to", outFile)
         }
 
         else if (choice === "2") {
 
             const sz = parseInt(readline.question("Kernel size: "))
             const result = imgProc(img, sz, "gaussian")
-            console.log("\nProcessed Image:")
-            console.log(result)
+            const outFile = readline.question("Output filename (.pgm): ")
+            savePgm(outFile, result)
+
+console.log("Saved to", outFile)
         } 
 
         else if (choice === "3") {
@@ -215,20 +259,26 @@ function main() {
             let vals = readline.question("").split(" ").map(Number)
             // console.log('vals',vals)
             // vals = vals.split(" ").map(Number)
-            const template = []
+            // const template = []
 
-            for (let i = 0; i < sz; i++) {
-                const row = vals.slice(i * sz, (i + 1) * sz)
-                template.push(row)
-            }
+            // for (let i = 0; i < sz; i++) {
+            //     const row = vals.slice(i * sz, (i + 1) * sz)
+            //     template.push(row)
+            // }
+               const template = Array.from(
+                {length: sz}, 
+                (n,i) => vals.slice(i * sz, (i+1) * sz)
+               )
 
             console.log("\nTemplate:")
             for (const row of template) {
                 console.log(row)
             }
             const result = imgProc(img, sz, "avg", template)
-            console.log("\nProcessed Image:")
-            console.log(result)
+            const outFile = readline.question("Output filename (.pgm): ")
+            savePgm(outFile, result)
+
+            console.log("Saved to", outFile)
         }
         else if (choice === "4") {
 
